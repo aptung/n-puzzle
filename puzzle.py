@@ -1,5 +1,6 @@
 import csv
 import copy
+import time
 
 def loadFileFrom(filepath):
     if loadFileFrom_helper(filepath)==None:
@@ -82,7 +83,9 @@ def isGoal(state):
 def main():
     # Testing code here
     #print(isGoal(loadFileFrom("input.txt")))
+    start_time = time.time()
     print(computeNeighbors(loadFileFrom("input.txt")))
+    print(time.time()-start_time)
 
 if __name__ == "__main__":
     main()
