@@ -80,6 +80,19 @@ def isGoal(state):
     goal[n-1][n-1]='*'
     return goal==state
 
+def BFS(state):
+    pass
+
+def DFS(state):
+    pass
+
+def bidirectionalsearch(state):
+    pass
+
+def AStar(state):
+    pass
+
+
 def main():
     # Testing code here
     #print(isGoal(loadFileFrom("input.txt")))
