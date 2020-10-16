@@ -1,6 +1,5 @@
 import csv
-import statistics
-
+import copy
 
 def loadFileFrom(filepath):
     if loadFileFrom_helper(filepath)==None:
@@ -41,9 +40,49 @@ def testArray(game, n):
                 nums[test] == -1
     return True
 
+def computeNeighbors(state):
+    n = len(state)
+    row = 0
+    column = 0
+    for i in range(n):
+        for j in range(n):
+            if state[i][j]=='*':
+                row = i
+                column = j
+
+    next_moves = []
+    # Move up
+    if row>0:
+        new_state = copy.deepcopy(state)
+        new_state[row][column], new_state[row-1][column] = new_state[row-1][column], new_state[row][column]
+        next_moves.append((new_state[row][column], new_state))
+    # Move down
+    if row<n-1:
+        new_state = copy.deepcopy(state)
+        new_state[row][column], new_state[row+1][column] = new_state[row+1][column], new_state[row][column]
+        next_moves.append((new_state[row][column], new_state))
+    # Move right
+    if column<n-1:
+        new_state = copy.deepcopy(state)
+        new_state[row][column], new_state[row][column+1] = new_state[row][column+1], new_state[row][column]
+        next_moves.append((new_state[row][column], new_state))
+    # Move left
+    if column>0:
+        new_state = copy.deepcopy(state)
+        new_state[row][column], new_state[row][column-1] = new_state[row][column-1], new_state[row][column]
+        next_moves.append((new_state[row][column], new_state))
+    return next_moves
+
+def isGoal(state):
+    n = len(state)
+    goal = [[str(x+1+y) for x in range(n)] for y in range(0,n**2,n)]
+    goal[n-1][n-1]='*'
+    return goal==state
+
 def main():
     # Testing code here
-    print(loadFileFrom("input.txt"))
+    #print(isGoal(loadFileFrom("input.txt")))
+    print(computeNeighbors(loadFileFrom("input.txt")))
 
 if __name__ == "__main__":
     main()
