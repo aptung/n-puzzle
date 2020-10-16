@@ -22,13 +22,24 @@ def loadFileFrom_helper(filepath):
             if len(line) is not n:
                 return None
             game.append(line)
-        return game
+        if testArray(game, n):
+            return game
+        return None
 
-def testArray(game):
-    pass
-    #Add more testing of array
-    #Test to make sure all numbers 1-n^2-1 are included
-    #Test to make sure the space character is "*"
+def testArray(game, n):
+    nums = [i for i in range(n**2)]
+    for line in game:
+        for num in line:
+            if not str.isdigit(num): # Checking to see if the star is present
+                return num=='*'
+            else:
+                test = int(num)
+                if test <0 or test>n**2-1: # Cheking for ints out of bound
+                    return False
+                if nums[test]==-1: # Checking for repeated elements
+                    return False
+                nums[test] == -1
+    return True
 
 def main():
     # Testing code here
