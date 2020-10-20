@@ -151,7 +151,7 @@ def AStar(state):
 def main():
     # print(isGoal(loadFileFrom("input.txt")))
     # Mr. Redmond hard 3x3: 1.3 sec
-    # My code hard 3x3: 4.2 sec
+    # My code hard 3x3: BFS 3.2 sec, DFS 4.4 seconds
     global_start_time = time.time()
     state = loadFileFrom("input.txt")
     if state == "There was an error":
