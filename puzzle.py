@@ -1,12 +1,13 @@
 import csv
 import copy
 import time
+# See http://www.artbylogic.com/puzzles/numSlider/numberShuffle.htm for practice problems
 
 def loadFileFrom(filepath):
-    if loadFileFrom_helper(filepath)==None:
+    file = loadFileFrom_helper(filepath)
+    if file==None:
         return "There was an error"
-    else:
-        return loadFileFrom_helper(filepath)
+    return file
 
 def loadFileFrom_helper(filepath):
     with open (filepath, newline='') as input:
@@ -33,12 +34,12 @@ def testArray(game, n):
             if not str.isdigit(num): # Checking to see if the star is present
                 return num=='*'
             else:
-                test = int(num)
-                if test <0 or test>n**2-1: # Cheking for ints out of bound
+                int_num = int(num)
+                if int_num <0 or int_num>n**2-1: # Cheking for ints out of bound
                     return False
-                if nums[test]==-1: # Checking for repeated elements
+                if nums[int_num]==-1: # Checking for repeated elements
                     return False
-                nums[test] == -1
+                nums[int_num] = -1
     return True
 
 def computeNeighbors(state):
@@ -81,7 +82,43 @@ def isGoal(state):
     return goal==state
 
 def BFS(state):
-    pass
+    start_time = time.time()
+    state = tuple(map(tuple, state))
+    frontier = [state]
+    parents = {state: None}
+    discovered = set()
+    i=0
+    while len(frontier) != 0:
+        current_state = frontier[0]
+        frontier.pop(0)
+        discovered.add(tuple(map(tuple, current_state)))
+        if isGoal([list(x) for x in current_state]):
+            print("done!")
+            return backtrack_states(parents, current_state)
+        for neighbor in computeNeighbors([list(x) for x in current_state]):
+            move = neighbor[0]
+            neighbor = neighbor[1]
+            neighbor = tuple(map(tuple, neighbor))
+            if neighbor not in discovered:
+                frontier.append(neighbor)
+                discovered.add(neighbor)
+                parents[neighbor] = current_state
+        i+=1
+        if i%10000 == 0:
+            print(i)
+            print(time.time()-start_time)
+
+
+def backtrack_states(parents, current_state):
+    moves = []
+    while parents[current_state] != None:
+        list_version_parent = [list(x) for x in parents[current_state]]
+        possible_moves = computeNeighbors(list_version_parent)
+        for states in possible_moves:
+            if states[1]==[list(x) for x in current_state]:
+                moves.insert(0, states[0])
+        current_state = parents[current_state]
+    return moves
 
 def DFS(state):
     pass
@@ -96,9 +133,9 @@ def AStar(state):
 def main():
     # Testing code here
     #print(isGoal(loadFileFrom("input.txt")))
-    start_time = time.time()
-    print(computeNeighbors(loadFileFrom("input.txt")))
-    print(time.time()-start_time)
+    global_start_time = time.time()
+    print(BFS(loadFileFrom("input.txt")))
+    print(time.time()-global_start_time)
 
 if __name__ == "__main__":
     main()
