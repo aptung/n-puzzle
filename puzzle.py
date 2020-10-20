@@ -9,6 +9,7 @@ def loadFileFrom(filepath):
         return "There was an error"
     return file
 
+# Returns a 2d tuple of the input, or None if there is an error
 def loadFileFrom_helper(filepath):
     with open (filepath, newline='') as input:
         reader = csv.reader(input)
@@ -24,9 +25,10 @@ def loadFileFrom_helper(filepath):
                 return None
             game.append(line)
         if testArray(game, n):
-            return game
+            return tuple(map(tuple, game))
         return None
 
+# Tests a 2d array, given the (correct) size of the array
 def testArray(game, n):
     nums = [i for i in range(n**2-1)]
     for line in game:
@@ -43,6 +45,9 @@ def testArray(game, n):
                 nums[int_num-1] = -1
     return (nums==[-1 for i in range(n**2-1)])
 
+# Takes in a 2d tuple as a state
+# Returns a tuple of the next moves, written as a tuple containing the thing to
+# to be swapped and the state (written as a 2d tuple)
 def computeNeighbors(state):
     n = len(state)
     row = 0
@@ -56,35 +61,41 @@ def computeNeighbors(state):
     next_moves = []
     # Move up
     if row>0:
-        new_state = copy.deepcopy(state)
+        new_state = copy.copy(state)
+        new_state = [list(x) for x in new_state]
         new_state[row][column], new_state[row-1][column] = new_state[row-1][column], new_state[row][column]
-        next_moves.append((new_state[row][column], new_state))
+        next_moves.append((new_state[row][column], tuple(map(tuple, new_state))))
     # Move down
     if row<n-1:
-        new_state = copy.deepcopy(state)
+        new_state = copy.copy(state)
+        new_state = [list(x) for x in new_state]
         new_state[row][column], new_state[row+1][column] = new_state[row+1][column], new_state[row][column]
-        next_moves.append((new_state[row][column], new_state))
+        next_moves.append((new_state[row][column], tuple(map(tuple, new_state))))
     # Move right
     if column<n-1:
-        new_state = copy.deepcopy(state)
+        new_state = copy.copy(state)
+        new_state = [list(x) for x in new_state]
         new_state[row][column], new_state[row][column+1] = new_state[row][column+1], new_state[row][column]
-        next_moves.append((new_state[row][column], new_state))
+        next_moves.append((new_state[row][column], tuple(map(tuple, new_state))))
     # Move left
     if column>0:
-        new_state = copy.deepcopy(state)
+        new_state = copy.copy(state)
+        new_state = [list(x) for x in new_state]
         new_state[row][column], new_state[row][column-1] = new_state[row][column-1], new_state[row][column]
-        next_moves.append((new_state[row][column], new_state))
+        next_moves.append((new_state[row][column], tuple(map(tuple, new_state))))
     return next_moves
 
+# Takes in a 2d tuple of the state
+# Returns a boolean value whether it is the goal
 def isGoal(state):
+    state = [list(x) for x in state]
     n = len(state)
     goal = [[str(x+1+y) for x in range(n)] for y in range(0,n**2,n)]
     goal[n-1][n-1]='*'
     return goal==state
 
-def BFS(state):
+def search(state, type):
     start_time = time.time()
-    state = tuple(map(tuple, state))
     frontier = [state]
     parents = {state: None}
     discovered = set()
@@ -92,16 +103,18 @@ def BFS(state):
     while len(frontier) != 0:
         current_state = frontier[0]
         frontier.pop(0)
-        discovered.add(tuple(map(tuple, current_state)))
-        if isGoal([list(x) for x in current_state]):
+        discovered.add(current_state)
+        if isGoal(current_state):
             print("done!")
             return backtrack_states(parents, current_state)
-        for neighbor in computeNeighbors([list(x) for x in current_state]):
+        for neighbor in computeNeighbors(current_state): #FLAG
             move = neighbor[0]
             neighbor = neighbor[1]
-            neighbor = tuple(map(tuple, neighbor))
             if neighbor not in discovered:
-                frontier.append(neighbor)
+                if type=="BFS":
+                    frontier.append(neighbor)
+                elif type=="DFS":
+                    frontier.insert(0, neighbor)
                 discovered.add(neighbor)
                 parents[neighbor] = current_state
         i+=1
@@ -109,44 +122,25 @@ def BFS(state):
             print(i)
             print(time.time()-start_time)
 
-
+# Takes tuples in all inputs
 def backtrack_states(parents, current_state):
     moves = []
     while parents[current_state] != None:
-        list_version_parent = [list(x) for x in parents[current_state]]
+        list_version_parent = parents[current_state]
         possible_moves = computeNeighbors(list_version_parent)
         for states in possible_moves:
-            if states[1]==[list(x) for x in current_state]:
+            if states[1]==current_state:
                 moves.insert(0, states[0])
         current_state = parents[current_state]
     return moves
 
+# Takes in a 2d tuple of a state and does BFS on it
+# Does not check improper input
+def BFS(state):
+    return search(state, "BFS")
+
 def DFS(state):
-    start_time = time.time()
-    state = tuple(map(tuple, state))
-    frontier = [state]
-    parents = {state: None}
-    discovered = set()
-    i=0
-    while len(frontier) != 0:
-        current_state = frontier[0]
-        frontier.pop(0)
-        discovered.add(tuple(map(tuple, current_state)))
-        if isGoal([list(x) for x in current_state]):
-            print("done!")
-            return backtrack_states(parents, current_state)
-        for neighbor in computeNeighbors([list(x) for x in current_state]):
-            move = neighbor[0]
-            neighbor = neighbor[1]
-            neighbor = tuple(map(tuple, neighbor))
-            if neighbor not in discovered:
-                frontier.insert(0, neighbor) # Only change from BFS is this line
-                discovered.add(neighbor)
-                parents[neighbor] = current_state
-        i+=1
-        if i%10000 == 0:
-            print(i)
-            print(time.time()-start_time)
+    return search(state, "DFS")
 
 def bidirectionalsearch(state):
     pass
@@ -154,18 +148,21 @@ def bidirectionalsearch(state):
 def AStar(state):
     pass
 
-
 def main():
-    # Testing code here
-    #print(isGoal(loadFileFrom("input.txt")))
+    # print(isGoal(loadFileFrom("input.txt")))
+    # Mr. Redmond hard 3x3: 1.3 sec
+    # My code hard 3x3: 4.2 sec
     global_start_time = time.time()
-    print(loadFileFrom("input.txt"))
+    state = loadFileFrom("input.txt")
+    if state == "There was an error":
+        print("There was an error")
+    else:
+        print(BFS(loadFileFrom("input.txt")))
     print(time.time()-global_start_time)
     '''
     global_start_time = time.time()
     print(DFS(loadFileFrom("input.txt")))
     print(time.time()-global_start_time)'''
-
 
 if __name__ == "__main__":
     main()
