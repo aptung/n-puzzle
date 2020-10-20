@@ -121,7 +121,31 @@ def backtrack_states(parents, current_state):
     return moves
 
 def DFS(state):
-    pass
+    start_time = time.time()
+    state = tuple(map(tuple, state))
+    frontier = [state]
+    parents = {state: None}
+    discovered = set()
+    i=0
+    while len(frontier) != 0:
+        current_state = frontier[0]
+        frontier.pop(0)
+        discovered.add(tuple(map(tuple, current_state)))
+        if isGoal([list(x) for x in current_state]):
+            print("done!")
+            return backtrack_states(parents, current_state)
+        for neighbor in computeNeighbors([list(x) for x in current_state]):
+            move = neighbor[0]
+            neighbor = neighbor[1]
+            neighbor = tuple(map(tuple, neighbor))
+            if neighbor not in discovered:
+                frontier.insert(0, neighbor) # Only change from BFS is this line
+                discovered.add(neighbor)
+                parents[neighbor] = current_state
+        i+=1
+        if i%10000 == 0:
+            print(i)
+            print(time.time()-start_time)
 
 def bidirectionalsearch(state):
     pass
@@ -136,6 +160,11 @@ def main():
     global_start_time = time.time()
     print(BFS(loadFileFrom("input.txt")))
     print(time.time()-global_start_time)
+
+    global_start_time = time.time()
+    print(DFS(loadFileFrom("input.txt")))
+    print(time.time()-global_start_time)
+
 
 if __name__ == "__main__":
     main()
