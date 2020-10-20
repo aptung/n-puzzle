@@ -28,19 +28,20 @@ def loadFileFrom_helper(filepath):
         return None
 
 def testArray(game, n):
-    nums = [i for i in range(n**2)]
+    nums = [i for i in range(n**2-1)]
     for line in game:
         for num in line:
             if not str.isdigit(num): # Checking to see if the star is present
-                return num=='*'
+                if not num=='*':
+                    return False
             else:
                 int_num = int(num)
                 if int_num <0 or int_num>n**2-1: # Cheking for ints out of bound
                     return False
-                if nums[int_num]==-1: # Checking for repeated elements
+                if nums[int_num-1]==-1: # Checking for repeated elements
                     return False
-                nums[int_num] = -1
-    return True
+                nums[int_num-1] = -1
+    return (nums==[-1 for i in range(n**2-1)])
 
 def computeNeighbors(state):
     n = len(state)
@@ -158,12 +159,12 @@ def main():
     # Testing code here
     #print(isGoal(loadFileFrom("input.txt")))
     global_start_time = time.time()
-    print(BFS(loadFileFrom("input.txt")))
+    print(loadFileFrom("input.txt"))
     print(time.time()-global_start_time)
-
+    '''
     global_start_time = time.time()
     print(DFS(loadFileFrom("input.txt")))
-    print(time.time()-global_start_time)
+    print(time.time()-global_start_time)'''
 
 
 if __name__ == "__main__":
