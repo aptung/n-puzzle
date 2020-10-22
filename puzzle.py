@@ -88,10 +88,10 @@ def computeNeighbors(state):
 # Takes in a 2d tuple of the state
 # Returns a boolean value whether it is the goal
 def isGoal(state):
-    state = [list(x) for x in state]
     n = len(state)
     goal = [[str(x+1+y) for x in range(n)] for y in range(0,n**2,n)]
     goal[n-1][n-1]='*'
+    goal = tuple(map(tuple, goal))
     return goal==state
 
 def search(state, type):
@@ -107,8 +107,7 @@ def search(state, type):
         if isGoal(current_state):
             print("done!")
             return backtrack_states(parents, current_state)
-        for neighbor in computeNeighbors(current_state): #FLAG
-            move = neighbor[0]
+        for neighbor in computeNeighbors(current_state):
             neighbor = neighbor[1]
             if neighbor not in discovered:
                 if type=="BFS":
@@ -126,8 +125,8 @@ def search(state, type):
 def backtrack_states(parents, current_state):
     moves = []
     while parents[current_state] != None:
-        list_version_parent = parents[current_state]
-        possible_moves = computeNeighbors(list_version_parent)
+        parent = parents[current_state]
+        possible_moves = computeNeighbors(parent)
         for states in possible_moves:
             if states[1]==current_state:
                 moves.insert(0, states[0])
@@ -143,7 +142,66 @@ def DFS(state):
     return search(state, "DFS")
 
 def bidirectionalsearch(state):
-    pass
+    start_time = time.time()
+    n=len(state)
+    frontier_forward = [state]
+    parents_forward = {state: None}
+    discovered_forward = set()
+
+    goal = [[str(x+1+y) for x in range(n)] for y in range(0,n**2,n)]
+    goal[n-1][n-1]='*'
+    goal = tuple(map(tuple, goal))
+    frontier_reverse = [goal]
+    parents_reverse = {goal: None}
+    discovered_reverse = set()
+    i=0
+    while len(frontier_forward) != 0 and len(frontier_reverse) !=0:
+        current_state_forward = frontier_forward[0]
+        frontier_forward.pop(0)
+        discovered_forward.add(current_state_forward)
+        if isGoal(current_state_forward):
+            print("done (forward search finished)")
+            return backtrack_states(parents_forward, current_state_forward)
+
+        current_state_reverse = frontier_reverse[0]
+        frontier_reverse.pop(0)
+        discovered_reverse.add(current_state_reverse)
+        if current_state_reverse==state:
+            print("done2 (reverse serarch finished)")
+            return backtrack_states(parents_reverse, current_state_reverse)[::-1]
+
+        new_states_forward = set()
+        for neighbor_forward in computeNeighbors(current_state_forward):
+            neighbor_forward = neighbor_forward[1]
+            new_states_forward.add(neighbor_forward)
+            if neighbor_forward not in discovered_forward:
+                frontier_forward.append(neighbor_forward)
+                discovered_forward.add(neighbor_forward)
+                parents_forward[neighbor_forward] = current_state_forward
+
+        intersection = new_states_forward.intersection(discovered_reverse)
+        if len(intersection)>0:
+            print("yay forward found backward")
+            return backtrack_states(parents_forward, intersection.pop()) + backtrack_states(parents_reverse, current_state_reverse)[::-1]
+
+        new_states_reverse = set()
+        for neighbor_reverse in computeNeighbors(current_state_reverse):
+            neighbor_reverse = neighbor_reverse[1]
+            new_states_reverse.add(neighbor_reverse)
+            if neighbor_reverse not in discovered_reverse:
+                frontier_reverse.append(neighbor_reverse)
+                discovered_reverse.add(neighbor_reverse)
+                parents_reverse[neighbor_reverse] = current_state_reverse
+
+        intersection = new_states_forward.intersection(new_states_reverse)
+        if len(intersection)>0:
+            print("yay backward found forward")
+            return backtrack_states(parents_forward, current_state_forward) + backtrack_states(parents_reverse, intersection.pop())[::-1]
+
+        i+=1
+        if i%10000 == 0:
+            print(i)
+            print(time.time()-start_time)
 
 def AStar(state):
     pass
@@ -151,13 +209,13 @@ def AStar(state):
 def main():
     # print(isGoal(loadFileFrom("input.txt")))
     # Mr. Redmond hard 3x3: 1.3 sec
-    # My code hard 3x3: BFS 3.2 sec, DFS 4.4 seconds
+    # My code hard 3x3: BFS 3.2 sec, DFS 4.4 seconds, bidirectional 0.15 seconds
     global_start_time = time.time()
     state = loadFileFrom("input.txt")
     if state == "There was an error":
         print("There was an error")
     else:
-        print(BFS(loadFileFrom("input.txt")))
+        print(bidirectionalsearch(loadFileFrom("input.txt")))
     print(time.time()-global_start_time)
     '''
     global_start_time = time.time()
