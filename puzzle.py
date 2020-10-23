@@ -100,14 +100,11 @@ def search(state, type):
     frontier = [state]
     parents = {state: None}
     discovered = set()
-    i=0
     while len(frontier) != 0:
         current_state = frontier[0]
         frontier.pop(0)
         discovered.add(current_state)
         if isGoal(current_state):
-            print("done!")
-            print(current_state)
             return backtrack_states(parents, current_state)
         for neighbor in computeNeighbors(current_state):
             neighbor = neighbor[1]
@@ -118,10 +115,6 @@ def search(state, type):
                     frontier.insert(0, neighbor)
                 discovered.add(neighbor)
                 parents[neighbor] = current_state
-        i+=1
-        if i%10000 == 0:
-            print(i)
-            print(time.time()-start_time)
 
 # Takes tuples in all inputs
 def backtrack_states(parents, current_state):
@@ -156,20 +149,17 @@ def bidirectionalsearch(state):
     frontier_reverse = [goal]
     parents_reverse = {goal: None}
     discovered_reverse = set()
-    i=0
     while len(frontier_forward) != 0 and len(frontier_reverse) !=0:
         current_state_forward = frontier_forward[0]
         frontier_forward.pop(0)
         discovered_forward.add(current_state_forward)
         if isGoal(current_state_forward):
-            print("forward search finished")
             return backtrack_states(parents_forward, current_state_forward)
 
         current_state_reverse = frontier_reverse[0]
         frontier_reverse.pop(0)
         discovered_reverse.add(current_state_reverse)
         if current_state_reverse==state:
-            print("reverse serarch finished")
             return backtrack_states(parents_reverse, current_state_reverse)[::-1]
 
         new_states_forward = set()
@@ -183,7 +173,6 @@ def bidirectionalsearch(state):
 
         intersection = new_states_forward.intersection(discovered_reverse)
         if len(intersection)>0:
-            print("yay forward found backward")
             return backtrack_states(parents_forward, intersection.pop()) + backtrack_states(parents_reverse, current_state_reverse)[::-1]
 
         new_states_reverse = set()
@@ -197,13 +186,7 @@ def bidirectionalsearch(state):
 
         intersection = new_states_forward.intersection(new_states_reverse)
         if len(intersection)>0:
-            print("yay backward found forward")
             return backtrack_states(parents_forward, current_state_forward) + backtrack_states(parents_reverse, intersection.pop())[::-1]
-
-        i+=1
-        if i%10000 == 0:
-            print(i)
-            print(time.time()-start_time)
 
 def AStar(state):
     start_time = time.time()
@@ -211,13 +194,10 @@ def AStar(state):
     frontier.put((h(state), state))
     parents = {state: None}
     discovered = set()
-    i=0
     while not frontier.empty():
         current_state = frontier.get()[1]
         discovered.add(current_state)
         if isGoal(current_state):
-            print("done!")
-            print(current_state)
             return backtrack_states(parents, current_state)
         for neighbor in computeNeighbors(current_state):
             neighbor = neighbor[1]
@@ -225,10 +205,6 @@ def AStar(state):
                 frontier.put((h(neighbor), neighbor))
                 discovered.add(neighbor)
                 parents[neighbor] = current_state
-        i+=1
-        if i%10000 == 0:
-            print(i)
-            print(time.time()-start_time)
 
 # Returns a heuristic for how close a state is to the goal, lower if "better"
 # Counts how many numbers are not in the correct place
@@ -246,15 +222,7 @@ def h(state):
     return h
 
 def main():
-    # Mr. Redmond hard 3x3: 1.3 sec
-    # My code hard 3x3: BFS 3.2 sec, DFS 4.4 seconds, bidirectional 0.15 seconds
-    global_start_time = time.time()
-    state = loadFileFrom("input.txt")
-    if state == "There was an error":
-        print("There was an error")
-    else:
-        print(AStar(loadFileFrom("input.txt")))
-    print(time.time()-global_start_time)
+    pass
 
 if __name__ == "__main__":
     main()
