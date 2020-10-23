@@ -1,6 +1,7 @@
 import csv
 import copy
 import time
+from queue import PriorityQueue
 # See http://www.artbylogic.com/puzzles/numSlider/numberShuffle.htm for practice problems
 
 def loadFileFrom(filepath):
@@ -106,6 +107,7 @@ def search(state, type):
         discovered.add(current_state)
         if isGoal(current_state):
             print("done!")
+            print(current_state)
             return backtrack_states(parents, current_state)
         for neighbor in computeNeighbors(current_state):
             neighbor = neighbor[1]
@@ -160,14 +162,14 @@ def bidirectionalsearch(state):
         frontier_forward.pop(0)
         discovered_forward.add(current_state_forward)
         if isGoal(current_state_forward):
-            print("done (forward search finished)")
+            print("forward search finished")
             return backtrack_states(parents_forward, current_state_forward)
 
         current_state_reverse = frontier_reverse[0]
         frontier_reverse.pop(0)
         discovered_reverse.add(current_state_reverse)
         if current_state_reverse==state:
-            print("done2 (reverse serarch finished)")
+            print("reverse serarch finished")
             return backtrack_states(parents_reverse, current_state_reverse)[::-1]
 
         new_states_forward = set()
@@ -204,10 +206,46 @@ def bidirectionalsearch(state):
             print(time.time()-start_time)
 
 def AStar(state):
-    pass
+    start_time = time.time()
+    frontier = PriorityQueue()
+    frontier.put((h(state), state))
+    parents = {state: None}
+    discovered = set()
+    i=0
+    while not frontier.empty():
+        current_state = frontier.get()[1]
+        discovered.add(current_state)
+        if isGoal(current_state):
+            print("done!")
+            print(current_state)
+            return backtrack_states(parents, current_state)
+        for neighbor in computeNeighbors(current_state):
+            neighbor = neighbor[1]
+            if neighbor not in discovered:
+                frontier.put((h(neighbor), neighbor))
+                discovered.add(neighbor)
+                parents[neighbor] = current_state
+        i+=1
+        if i%10000 == 0:
+            print(i)
+            print(time.time()-start_time)
+
+# Returns a heuristic for how close a state is to the goal, lower if "better"
+# Counts how many numbers are not in the correct place
+def h(state):
+    n = len(state)
+    h = 0
+    for i in range(n):
+        for j in range(n):
+            if state[i][j]=="*":
+                if i!=n-1 or j!=n-1:
+                    h+=1
+            else:
+                if not int(state[i][j]) == j+1+n*i:
+                    h += 1
+    return h
 
 def main():
-    # print(isGoal(loadFileFrom("input.txt")))
     # Mr. Redmond hard 3x3: 1.3 sec
     # My code hard 3x3: BFS 3.2 sec, DFS 4.4 seconds, bidirectional 0.15 seconds
     global_start_time = time.time()
@@ -215,12 +253,8 @@ def main():
     if state == "There was an error":
         print("There was an error")
     else:
-        print(bidirectionalsearch(loadFileFrom("input.txt")))
+        print(AStar(loadFileFrom("input.txt")))
     print(time.time()-global_start_time)
-    '''
-    global_start_time = time.time()
-    print(DFS(loadFileFrom("input.txt")))
-    print(time.time()-global_start_time)'''
 
 if __name__ == "__main__":
     main()
